@@ -1,2 +1,2 @@
-# CoML-1st_Competition
-CoML 1st Competition
+# SAI-1st_Competition
+SAI 1st Competition
