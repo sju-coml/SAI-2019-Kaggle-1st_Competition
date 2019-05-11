@@ -618,14 +618,324 @@ plt.ylabel('Algorithm')
  class sklearn.tree.DecisionTreeClassifier(criterion=’gini’, splitter=’best’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None, presort=False)
  
  (3) Decision Tree의 Hyper-Parameter 튜닝 시작!
- #base model
-dtree = tree.DecisionTreeClassifier(random_state = 0)
+  1) Base Model (튜닝 전 모델 확인)
+dtree = tree.DecisionTreeClassifier(random_state = 0) #튜닝 전 모델
 base_results = model_selection.cross_validate(dtree, data1[data1_x_bin], data1[Target], cv  = cv_split)
-dtree.fit(data1[data1_x_bin], data1[Target])
+dtree.fit(data1[data1_x_bin], data1[Target]) #튜닝 전 모델 학습
 
-print('BEFORE DT Parameters: ', dtree.get_params())
+print('BEFORE DT Parameters: ', dtree.get_params()) #튜닝 전 파라미터 출력
+#튜닝 전 스코어 출력
 print("BEFORE DT Training w/bin score mean: {:.2f}". format(base_results['train_score'].mean()*100)) 
 print("BEFORE DT Test w/bin score mean: {:.2f}". format(base_results['test_score'].mean()*100))
 print("BEFORE DT Test w/bin score 3*std: +/- {:.2f}". format(base_results['test_score'].std()*100*3))
 #print("BEFORE DT Test w/bin set score min: {:.2f}". format(base_results['test_score'].min()*100))
 print('-'*10)
+
+  2) 모델 튜닝
+#모델 파라미터 튜닝시키기
+param_grid = {'criterion': ['gini', 'entropy'],  #Scoring 방법을 정의한다. Information gain을 계산하기 위한 2가지 방법이 있다. Default는 gini이다.
+              #'splitter': ['best', 'random'], #Split 방법을 정의한다. 2가지 방법이 있는데 Default는 best이다.
+              'max_depth': [2,4,6,8,10,None], #max depth 트리는 깊이가 커질 수 있다. Default는 none이다.
+              #'min_samples_split': [2,5,10,.03,.05], #split을 하기 전 minimum subset 크기를 설정한다. Default는 2이다.
+              #'min_samples_leaf': [1,5,10,.03,.05], #split을 한 이후 minimum subset 크기를 설정한다. Default는 1이다.
+              #'max_features': [None, 'auto'], #split을 할 때 고려해야 할 feature의 최대 크기를 정한다. Default는 none 혹은 all이다.
+              'random_state': [0] #Seed 또는 난수 생성기이다.
+             }
+#print(list(model_selection.ParameterGrid(param_grid)))
+
+#튜닝된 모델로 학습시키기
+tune_model = model_selection.GridSearchCV(tree.DecisionTreeClassifier(), param_grid=param_grid, scoring = 'roc_auc', cv = cv_split)
+tune_model.fit(data1[data1_x_bin], data1[Target]) #튜닝된 모델로 학습을 시킨다.
+
+  3) 튜닝 된 모델 평가
+print('AFTER DT Parameters: ', tune_model.best_params_) #파라미터 확인
+#모델 평가
+print("AFTER DT Training w/bin score mean: {:.2f}". format(tune_model.cv_results_['mean_train_score'][tune_model.best_index_]*100)) 
+print("AFTER DT Test w/bin score mean: {:.2f}". format(tune_model.cv_results_['mean_test_score'][tune_model.best_index_]*100))
+print("AFTER DT Test w/bin score 3*std: +/- {:.2f}". format(tune_model.cv_results_['std_test_score'][tune_model.best_index_]*100*3))
+print('-'*10)
+
+
+7. Feature Selection을 통해 모델 튜닝하기
+ - 모델은 독립변수(input)에 따른 종속변수(output)로 학습을 한다.
+ - 독립 변수가 많다고 꼭 더 좋은 모델을 만드는 것은 아니다. '올바른 독립 변수'를 설정하는 게 중요하다!
+ - Feature를 잘 선택해야 좋은 모델을 만들 수 있다.
+   Cross Validation과 RFE를 사용해서 선택할 수 있다.
+
+ (1) Feature Selection 하기
+  1) 기본 모델
+# Feature Selection을 하기 전 기본 모델의 형태, 스코어를 확인한다.
+print('BEFORE DT RFE Training Shape Old: ', data1[data1_x_bin].shape) 
+print('BEFORE DT RFE Training Columns Old: ', data1[data1_x_bin].columns.values)
+
+print("BEFORE DT RFE Training w/bin score mean: {:.2f}". format(base_results['train_score'].mean()*100)) 
+print("BEFORE DT RFE Test w/bin score mean: {:.2f}". format(base_results['test_score'].mean()*100))
+print("BEFORE DT RFE Test w/bin score 3*std: +/- {:.2f}". format(base_results['test_score'].std()*100*3))
+print('-'*10)
+
+  2) Feature Selection 하기
+dtree_rfe = feature_selection.RFECV(dtree, step = 1, scoring = 'accuracy', cv = cv_split) #RFE, CV
+
+#Feature Selection 한 모델로 학습시키기
+dtree_rfe.fit(data1[data1_x_bin], data1[Target])
+X_rfe = data1[data1_x_bin].columns.values[dtree_rfe.get_support()] #줄어든 Feature를 다시 X로 이용!
+rfe_results = model_selection.cross_validate(dtree, data1[X_rfe], data1[Target], cv  = cv_split)
+
+  3) Feature Selection 적용 모델 평가
+#모델의 형태
+print('AFTER DT RFE Training Shape New: ', data1[X_rfe].shape) 
+print('AFTER DT RFE Training Columns New: ', X_rfe)
+
+#모델 평가
+print("AFTER DT RFE Training w/bin score mean: {:.2f}". format(rfe_results['train_score'].mean()*100)) 
+print("AFTER DT RFE Test w/bin score mean: {:.2f}". format(rfe_results['test_score'].mean()*100))
+print("AFTER DT RFE Test w/bin score 3*std: +/- {:.2f}". format(rfe_results['test_score'].std()*100*3))
+print('-'*10)
+
+  4) rfe 모델 튜닝하기
+#모델 튜닝
+rfe_tune_model = model_selection.GridSearchCV(tree.DecisionTreeClassifier(), param_grid=param_grid, scoring = 'roc_auc', cv = cv_split)
+
+#튜닝한 모델로 학습시키기
+rfe_tune_model.fit(data1[X_rfe], data1[Target])
+
+#튜닝한 모델 스코어 확인
+print('AFTER DT RFE Tuned Parameters: ', rfe_tune_model.best_params_)
+print("AFTER DT RFE Tuned Training w/bin score mean: {:.2f}". format(rfe_tune_model.cv_results_['mean_train_score'][tune_model.best_index_]*100)) 
+print("AFTER DT RFE Tuned Test w/bin score mean: {:.2f}". format(rfe_tune_model.cv_results_['mean_test_score'][tune_model.best_index_]*100))
+print("AFTER DT RFE Tuned Test w/bin score 3*std: +/- {:.2f}". format(rfe_tune_model.cv_results_['std_test_score'][tune_model.best_index_]*100*3))
+print('-'*10)
+
+ (2) 그래프로 시각화 해보기
+import graphviz 
+dot_data = tree.export_graphviz(dtree, out_file=None, 
+                                feature_names = data1_x_bin, class_names = True,
+                                filled = True, rounded = True)
+graph = graphviz.Source(dot_data) 
+graph
+
+
+8. Validate and Implement
+ (1) 앙상블 하기
+  - 모델을 구성할 때 꼭 하나의 모델만을 사용할 필요는 없다.
+  - 여러 모델들이 출력한 결과를 voting 하게 해서, voting 한 결과값을 이용할 수 있다.
+  # 앙상블 voting
+  vote_est = [
+    #다양한 모델들을 불러와서 앙상블한다.
+    ('ada', ensemble.AdaBoostClassifier()),
+    ('bc', ensemble.BaggingClassifier()),
+    ('etc',ensemble.ExtraTreesClassifier()),
+    ('gbc', ensemble.GradientBoostingClassifier()),
+    ('rfc', ensemble.RandomForestClassifier()),
+
+    ('gpc', gaussian_process.GaussianProcessClassifier()),
+    
+    ('lr', linear_model.LogisticRegressionCV()),
+    
+    ('bnb', naive_bayes.BernoulliNB()),
+    ('gnb', naive_bayes.GaussianNB()),
+    
+    ('knn', neighbors.KNeighborsClassifier()),
+    
+    ('svc', svm.SVC(probability=True)),
+    
+    ('xgb', XGBClassifier())
+]
+
+ (2) Voting 룰 정하기
+  - Hard Vote / Soft Vote 등 각 모델들이 Voting을 할 때의 룰을 정할 수 있다.
+  1) Hard Vote or majority rule
+# 앞에서 구축해놨던 앙상블 모델인 vote_est로, 'hard'의 voting 방법을 통해 모델을 구축한다.
+vote_hard = ensemble.VotingClassifier(estimators = vote_est , voting = 'hard') #앙상블 모델을 hard한 방법으로 vote!
+vote_hard_cv = model_selection.cross_validate(vote_hard, data1[data1_x_bin], data1[Target], cv  = cv_split) #CV
+vote_hard.fit(data1[data1_x_bin], data1[Target]) #학습시키기
+
+# Hard voting 평가
+print("Hard Voting Training w/bin score mean: {:.2f}". format(vote_hard_cv['train_score'].mean()*100)) 
+print("Hard Voting Test w/bin score mean: {:.2f}". format(vote_hard_cv['test_score'].mean()*100))
+print("Hard Voting Test w/bin score 3*std: +/- {:.2f}". format(vote_hard_cv['test_score'].std()*100*3))
+print('-'*10)
+
+  2) Soft Vote or Weighted Probabilities
+# 앞에서 구축해놨던 앙상블 모델인 vote_est로, 'soft'의 voting 방법을 통해 모델을 구축한다.
+vote_soft = ensemble.VotingClassifier(estimators = vote_est , voting = 'soft') #앙상블 모델을 soft한 방법으로 vote!
+vote_soft_cv = model_selection.cross_validate(vote_soft, data1[data1_x_bin], data1[Target], cv  = cv_split) #CV
+vote_soft.fit(data1[data1_x_bin], data1[Target]) #학습시키기
+
+# Soft voting 평가
+print("Soft Voting Training w/bin score mean: {:.2f}". format(vote_soft_cv['train_score'].mean()*100)) 
+print("Soft Voting Test w/bin score mean: {:.2f}". format(vote_soft_cv['test_score'].mean()*100))
+print("Soft Voting Test w/bin score 3*std: +/- {:.2f}". format(vote_soft_cv['test_score'].std()*100*3))
+print('-'*10)
+
+ (3) 각 앙상블 속의 모델들 하이퍼파라미터 튜닝하기
+  - grid Search CV를 통해 하이퍼파라미터를 튜닝하자.
+  1) grid Search CV 설정  
+grid_n_estimator = [10, 50, 100, 300]
+grid_ratio = [.1, .25, .5, .75, 1.0]
+grid_learn = [.01, .03, .05, .1, .25]
+grid_max_depth = [2, 4, 6, 8, 10, None]
+grid_min_samples = [5, 10, .03, .05, .10]
+grid_criterion = ['gini', 'entropy']
+grid_bool = [True, False]
+grid_seed = [0]
+
+  2) 모델별 하이퍼파라미터 튜닝하기
+  grid_param = [ #grid를 통해 하이퍼 파라미터 튜닝!
+            [{
+	    #AdaBoostClassifier 튜닝
+            'n_estimators': grid_n_estimator, #default=50
+            'learning_rate': grid_learn, #default=1
+            #'algorithm': ['SAMME', 'SAMME.R'], #default=’SAMME.R
+            'random_state': grid_seed
+            }],
+           
+            [{
+	    #BaggingClassifier 튜닝
+            'n_estimators': grid_n_estimator, #default=10
+            'max_samples': grid_ratio, #default=1.0
+            'random_state': grid_seed
+             }],
+	     
+	     [{
+	     #ExtraTreesClassifier 튜닝
+            'n_estimators': grid_n_estimator, #default=10
+            'criterion': grid_criterion, #default=”gini”
+            'max_depth': grid_max_depth, #default=None
+            'random_state': grid_seed
+             }],
+
+            [{
+	    #GradientBoostingClassifier 튜닝
+            #'loss': ['deviance', 'exponential'], #default=’deviance’
+            'learning_rate': [.05], #default=0.1 -- 12/31/17 set to reduce runtime -- The best parameter for GradientBoostingClassifier is {'learning_rate': 0.05, 'max_depth': 2, 'n_estimators': 300, 'random_state': 0} with a runtime of 264.45 seconds.
+            'n_estimators': [300], #default=100 -- 12/31/17 set to reduce runtime -- The best parameter for GradientBoostingClassifier is {'learning_rate': 0.05, 'max_depth': 2, 'n_estimators': 300, 'random_state': 0} with a runtime of 264.45 seconds.
+            #'criterion': ['friedman_mse', 'mse', 'mae'], #default=”friedman_mse”
+            'max_depth': grid_max_depth, #default=3   
+            'random_state': grid_seed
+             }],
+	     
+	     [{
+	     #RandomForestClassifier 튜닝
+            'n_estimators': grid_n_estimator, #default=10
+            'criterion': grid_criterion, #default=”gini”
+            'max_depth': grid_max_depth, #default=None
+            'oob_score': [True], #default=False -- 12/31/17 set to reduce runtime -- The best parameter for RandomForestClassifier is {'criterion': 'entropy', 'max_depth': 6, 'n_estimators': 100, 'oob_score': True, 'random_state': 0} with a runtime of 146.35 seconds.
+            'random_state': grid_seed
+             }],
+    
+            [{    
+	    #GaussianProcessClassifier 튜닝
+            'max_iter_predict': grid_n_estimator, #default: 100
+            'random_state': grid_seed
+            }],
+	    
+	    [{
+	    #LogisticRegressionCV 튜닝
+            'fit_intercept': grid_bool, #default: True
+            #'penalty': ['l1','l2'],
+            'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'], #default: lbfgs
+            'random_state': grid_seed
+             }],
+                
+            [{
+	    #BernoulliNB 튜닝
+            'alpha': grid_ratio, #default: 1.0
+             }],
+        
+            #GaussianNB - 
+            [{}],
+	    
+	    [{
+	    #KNeighborsClassifier 튜닝
+            'n_neighbors': [1,2,3,4,5,6,7], #default: 5
+            'weights': ['uniform', 'distance'], #default = ‘uniform’
+            'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+            }],
+            
+            [{
+	    #SVC 튜닝
+            #'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+            'C': [1,2,3,4,5], #default=1.0
+            'gamma': grid_ratio, #edfault: auto
+            'decision_function_shape': ['ovo', 'ovr'], #default:ovr
+            'probability': [True],
+            'random_state': grid_seed
+             }],
+	     
+	     [{
+	     #XGBClassifier 튜닝
+            'learning_rate': grid_learn, #default: .3
+            'max_depth': [1,2,4,6,8,10], #default 2
+            'n_estimators': grid_n_estimator, 
+            'seed': grid_seed  
+             }]   
+        ]
+
+  3) 모델별로 튜닝한 파라미터를 각 모델에 직접 적용하기.
+  #Time Count
+  start_total = time.perf_counter()
+  
+  #모델별로 튜닝한 파라미터를 각 모델에 직접 적용!
+  for clf, param in zip (vote_est, grid_param):
+    
+    start = time.perf_counter()        
+    best_search = model_selection.GridSearchCV(estimator = clf[1], param_grid = param, cv = cv_split, scoring = 'roc_auc')
+    best_search.fit(data1[data1_x_bin], data1[Target])
+    run = time.perf_counter() - start
+
+    best_param = best_search.best_params_
+    print('The best parameter for {} is {} with a runtime of {:.2f} seconds.'.format(clf[1].__class__.__name__, best_param, run))
+    clf[1].set_params(**best_param) 
+    
+    run_total = time.perf_counter() - start_total
+    print('Total optimization time was {:.2f} minutes.'.format(run_total/60))
+
+    print('-'*10)
+    
+  4) Voting rule 정하기
+   - Hard Vote or majority rules
+grid_hard = ensemble.VotingClassifier(estimators = vote_est , voting = 'hard')
+grid_hard_cv = model_selection.cross_validate(grid_hard, data1[data1_x_bin], data1[Target], cv  = cv_split)
+grid_hard.fit(data1[data1_x_bin], data1[Target])
+
+print("Hard Voting w/Tuned Hyperparameters Training w/bin score mean: {:.2f}". format(grid_hard_cv['train_score'].mean()*100)) 
+print("Hard Voting w/Tuned Hyperparameters Test w/bin score mean: {:.2f}". format(grid_hard_cv['test_score'].mean()*100))
+print("Hard Voting w/Tuned Hyperparameters Test w/bin score 3*std: +/- {:.2f}". format(grid_hard_cv['test_score'].std()*100*3))
+print('-'*10)
+
+   - Soft Vote or weighted probabilities
+grid_soft = ensemble.VotingClassifier(estimators = vote_est , voting = 'soft')
+grid_soft_cv = model_selection.cross_validate(grid_soft, data1[data1_x_bin], data1[Target], cv  = cv_split)
+grid_soft.fit(data1[data1_x_bin], data1[Target])
+
+print("Soft Voting w/Tuned Hyperparameters Training w/bin score mean: {:.2f}". format(grid_soft_cv['train_score'].mean()*100)) 
+print("Soft Voting w/Tuned Hyperparameters Test w/bin score mean: {:.2f}". format(grid_soft_cv['test_score'].mean()*100))
+print("Soft Voting w/Tuned Hyperparameters Test w/bin score 3*std: +/- {:.2f}". format(grid_soft_cv['test_score'].std()*100*3))
+print('-'*10)
+
+
+9. Submission 파일 만들기!
+ (1) 모델링 준비
+print(data_val.info())
+print("-"*10)
+
+ (2) Handmade Decision Tree 스코어 확인
+  - data_val의 Survived에 Handmade Decision Tree 모델이 predict한 결과를 저장한다.
+data_val['Survived'] = mytree(data_val).astype(int)
+# 스코어 확인하는 코드
+
+ (3) Hard vote / grid 적용해서 앙상블한 스코어 확인
+  - data_val의 Survived에 Hard vote / grid를 적용해서 앙상블한 모델이 predict한 결과를 저장한다.
+  - (생략) 앞에서 만든 여러 모델들의 스코어를 다 확인한 결과, 이 모델의 스코어가 가장 높았다! 이 Predict를 이용해서 Submission 하자.
+data_val['Survived'] = grid_hard.predict(data_val[data1_x_bin])
+# 스코어 확인하는 코드
+
+ (4) Submission 파일 생성
+  - data_val에 저장한 predict 결과를 Submission 파일로 생성한다.
+submit = data_val[['PassengerId','Survived']] #Columns 생성
+submit.to_csv("../working/submit.csv", index=False) #Submit 파일 저장
+
+#data_val에 저장한 predict 결과를 Submission 파일에 작성한다.
+print('Validation Data Distribution: \n', data_val['Survived'].value_counts(normalize = True))
+submit.sample(10) #샘플 10개 확인
