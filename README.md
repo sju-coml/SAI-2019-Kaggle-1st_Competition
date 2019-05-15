@@ -12,7 +12,7 @@
 ## 2. Team Briefing
  - A Data Science Framework To Achieve 99% Accuracy
  - Simple titanic kernel(82%) for beginner like me 
- -
+ - A Comprehensive ML Workflow with Python Titanic: Machine Learning from Disaster
  -
 
 <br>
