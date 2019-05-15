@@ -24,4 +24,7 @@
 <br>
 
 ## 4. Team Score
- - 
+
+| Rank/Total | Team | Date |
+|---|:---:|---:|
+| 140/11434 | SJU-SAI | 2019.05.15 |
