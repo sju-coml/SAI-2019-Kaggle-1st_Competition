@@ -13,7 +13,7 @@
  - A Data Science Framework To Achieve 99% Accuracy
  - Simple titanic kernel(82%) for beginner like me 
  - A Comprehensive ML Workflow with Python Titanic: Machine Learning from Disaster
- -
+ - Simplest Top 10% Titanic [0.80861]
 
 <br>
 
