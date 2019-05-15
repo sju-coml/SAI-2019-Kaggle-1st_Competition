@@ -11,7 +11,7 @@
 
 ## 2. Team Briefing
  - A Data Science Framework To Achieve 99% Accuracy
- - 
+ - Simple titanic kernel(82%) for beginner like me 
  -
  -
 
