@@ -19,10 +19,10 @@
 
 
 ## 3. Experiment Result
-### 서기원
+### (1) 서기원
 
 | Experiment | Score | Date |
-|---|:---:|---:|---:|
+|---|:---:|---:|
 | Original Kernel : A Data Science Framework To Achieve 99% Accuracy | 0.77990 | 2019.05.16 |
 | 0.1 times down grade than the original kernel | 0.77033 | 2019.05.16 |
 | 10 times upgrade than the original kernel | 0.77990 | 2019.05.16 |
