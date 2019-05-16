@@ -29,7 +29,7 @@
 | 100 times upgrade than the original kernel | 0.78468 | 2019.05.16 |
 | 1000 times upgrade than the original kernel | 0.75119 | 2019.05.16 |
 
- - 튜닝 값 : n_estimators, lr, max_samples, max_depth, max_iter_predict, alpha, gamma
+ - 튜닝 값 : Ensemble을 구성하는 모든 모델의 n_estimators, lr, max_samples, max_depth, max_iter_predict, alpha, gamma
  
 ### (2)
 | Experiment | Score | Date |
