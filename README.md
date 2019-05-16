@@ -25,6 +25,7 @@
 | 서기원 | 0.1 times down grade than the original kernel | 0.77033 | 2019.05.16 |
 | 서기원 | 10 times upgrade than the original kernel | 0.77990 | 2019.05.16 |
 | 서기원 | 100 times upgrade than the original kernel | 0.78468 | 2019.05.16 |
+| 서기원 | 1000 times upgrade than the original kernel | 0.75119 | 2019.05.16 |
 
  - 서기원 튜닝 값 : n_estimators, lr, max_samples, max_depth, max_iter_predict, alpha, gamma
 
