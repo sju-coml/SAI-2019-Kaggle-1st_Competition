@@ -19,12 +19,14 @@
 
 
 ## 3. Experiment Result
- - Parameter / Score
+| Name | Team | Experiment | Score | Date |
+|---|:---:|---:|---:|---:|
+| 서기원(Kiwon Seo) | SJU-SAI | Original Kernel : A Data Science Framework To Achieve 99% Accuracy | 0.77990 | 2019.05.16 |
 
 <br>
 
 ## 4. Team Score
 
-| Rank/Total | Team | Score | Date |
-|---|:---:|---:|---:|
-| 140/11434 | SJU-SAI | 1.0 | 2019.05.15 |
+| Rank/Total | Team | Date |
+|---|:---:|---:|
+| 140/11434 | SJU-SAI | 2019.05.15 |
