@@ -22,7 +22,7 @@
 | Name | Experiment | Score | Date |
 |---|:---:|---:|---:|
 | 서기원 | Original Kernel : A Data Science Framework To Achieve 99% Accuracy | 0.77990 | 2019.05.16 |
-| 서기원 | 0.1 times down grade than the original kernel | 0.77033 | 2019.05.16 |
+| 서기원 | 0.1 times down grade than the original kernel (n_estimators, lr, max_samples, max_depth, max_iter_predict, alpha, gamma) | 0.77033 | 2019.05.16 |
 | 서기원 | 10 times upgrade than the original kernel | 0.77990 | 2019.05.16 |
 | 서기원 | 100 times upgrade than the original kernel | 0.78468 | 2019.05.16 |
 
