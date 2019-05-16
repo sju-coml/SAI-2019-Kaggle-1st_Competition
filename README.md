@@ -21,7 +21,7 @@
 ## 3. Experiment Result
 | Name | Team | Experiment | Score | Date |
 |---|:---:|---:|---:|---:|
-| 서기원(Kiwon Seo) | SJU-SAI | Original Kernel : A Data Science Framework To Achieve 99% Accuracy | 0.77990 | 2019.05.16 |
+| 서기원 | SJU-SAI | Original Kernel : A Data Science Framework To Achieve 99% Accuracy | 0.77990 | 2019.05.16 |
 
 <br>
 
