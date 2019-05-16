@@ -30,6 +30,15 @@
 | 1000 times upgrade than the original kernel | 0.75119 | 2019.05.16 |
 
  - 튜닝 값 : n_estimators, lr, max_samples, max_depth, max_iter_predict, alpha, gamma
+ 
+### (2)
+| Experiment | Score | Date |
+|---|:---:|---:|
+
+ - 튜닝 값 : 
+
+### (3)
+### (4)
 
 <br>
 
