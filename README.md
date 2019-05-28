@@ -64,8 +64,8 @@ learning rate는 해볼법 하지만 ...
 
 
 #### 1. 튜닝 값 : RandomForest 의 bootstrap, n_estimators. 나머지 파라미터는 의미가 잘 와닿지 않아서 생략하였다.
-  - 모델을 제작한 사람은, 여러 가지의 모델로부터 투표를 해서 결정을 해내는 방법이었는데, 굉장이 이것이 비효율적으로 느껴졌다.
-  - 따라서 Random Forest 만 이용해보기로 하였다.
+  - 모델을 제작한 사람은, 여러 가지의 모델로부터 투표를 해서 결정을 해내는 방법을 채택했다.
+  - 다양한 모델을 모르기 때문에 하나에만 집중해보기로 했다. 따라서 Random Forest 만 이용해보기로 하였다.
   - bootstrap : bootstrap 추출 여부
   - n_estimators : Random Forest의 트리 수
  
