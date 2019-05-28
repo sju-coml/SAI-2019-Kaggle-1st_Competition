@@ -87,7 +87,6 @@ learning rate는 해볼법 하지만 ...
   - 다양한 estimator 을 loop 를 통해 시도해 보았어야 하지만 그러지 못했다.
   - 별도의 test set이 없었기 때문에 스스로 다양한 것들을 시도해보지 못했다. K-fold 를 이용하여 validation set 만 이용할 수 있었다.
   
-### (4)
 
 <br>
 
